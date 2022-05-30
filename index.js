@@ -1,7 +1,8 @@
 const dbSetup = require('./db/db_setup');
 const Hapi = require('@hapi/hapi');
 const User = require('./db/models/user');
-dbSetup();  
+const Joi = require('joi');
+dbSetup();
 
 const init = async () => {
 
@@ -35,8 +36,15 @@ const init = async () => {
             } catch (error) {
                 return h.response(error);
             }
-
+        },
+        options: {
+            validate: {
+                query: Joi.object({
+                    limit: Joi.number().integer().min(1).max(100).default(10)
+                })
+            }
         }
+
     });
 
     // GET user by id..
@@ -52,7 +60,13 @@ const init = async () => {
             } catch (error) {
                 return h.response(error);
             }
-
+        },
+        options: {
+            validate: {
+                params: Joi.object({
+                    id: Joi.number()
+                })
+            }
         }
     });
 
@@ -68,9 +82,19 @@ const init = async () => {
                     password: request.payload.password,
                     channel_id: request.payload.channel_id
                 })
-                return h.response('user post details');
+                return h.response('User signup succefully');
             } catch (error) {
                 return h.response(error);
+            }
+        },
+        options: {
+            validate: {
+                payload: Joi.object({
+                    user_name: Joi.string().min(1).max(140),
+                    email: Joi.string().email().required(),
+                    password: Joi.string().required(),
+                    channel_id: Joi.number()
+                })
             }
         }
     });
@@ -86,10 +110,23 @@ const init = async () => {
                     email: request.payload.email,
                     password: request.payload.password,
                     channel_id: request.payload.channel_id
-                }).where('id',request.params.id)
-                return (h.response('user updated successfully'));
+                }).where('id', request.params.id)
+                return (h.response('User updated successfully'));
             } catch (error) {
                 return h.response(error);
+            }
+        },
+        options: {
+            validate: {
+                params: Joi.object({
+                    id: Joi.number().integer()
+                }),
+                payload: Joi.object({
+                    user_name: Joi.string().min(1).max(140),
+                    email: Joi.string().email().required(),
+                    password: Joi.string().required(),
+                    channel_id: Joi.number().integer()
+                })
             }
         }
     });
@@ -101,9 +138,16 @@ const init = async () => {
         handler: async (request, h) => {
             try {
                 const user = await User.query().where('id', request.params.id).delete()
-                return h.response(user);
+                return h.response("User delete successfully");
             } catch (error) {
                 return h.response(error);
+            }
+        },
+        options: {
+            validate: {
+                params: Joi.object({
+                    id: Joi.number()
+                })
             }
         }
     });
