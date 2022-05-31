@@ -103,6 +103,18 @@ const init = async () => {
     server.route({
         method: 'PUT',
         path: '/update/{id}',
+        options: {
+            validate: {
+                params: Joi.object({
+                    id: Joi.number().integer()
+                }),
+                payload: Joi.object({
+                    user_name: Joi.string().min(1).max(140),
+                    email: Joi.string().email().required(),
+                    password: Joi.string().required(),
+                    channel_id: Joi.number().integer()
+                })
+            },
         handler: async (request, h) => {
             try {
                 const user = await User.query().update({
@@ -116,18 +128,7 @@ const init = async () => {
                 return h.response(error);
             }
         },
-        options: {
-            validate: {
-                params: Joi.object({
-                    id: Joi.number().integer()
-                }),
-                payload: Joi.object({
-                    user_name: Joi.string().min(1).max(140),
-                    email: Joi.string().email().required(),
-                    password: Joi.string().required(),
-                    channel_id: Joi.number().integer()
-                })
-            }
+       
         }
     });
 
